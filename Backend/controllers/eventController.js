@@ -1,12 +1,14 @@
 import Event from "../models/Event.js";
 import ExpressError from "../utils/ExpressError.js";
+import { syncEventSeats } from "../utils/syncEventSeats.js";
 
 export const getEvents = async (req, res) => {
   const events = await Event.find().populate(
     "createdBy",
     "name email"
   );
-  console.log(events);
+
+  await syncEventSeats(events);
 
   if (req.query.search) {
     const filteredEvents = events.filter((event) =>
@@ -44,6 +46,8 @@ export const getEventById = async (req, res) => {
   if (!event) {
     throw new ExpressError(404, "Event not found");
   }
+
+  await syncEventSeats(event);
 
   res.json({
     success: true,
